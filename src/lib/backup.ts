@@ -292,7 +292,6 @@ export async function parseBackupFile(file: File): Promise<BackupData> {
 /** Replace all local data with the backup, then reload the page. */
 export async function restoreBackup(backup: BackupData): Promise<void> {
   window.localStorage.setItem(STORAGE_KEYS.songs, JSON.stringify(backup.songs))
-  window.localStorage.setItem(STORAGE_KEYS.seeded, '1')
   window.localStorage.setItem(
     STORAGE_KEYS.secretarySettings,
     JSON.stringify(backup.secretary?.settings ?? DEFAULT_SECRETARY_SETTINGS),

@@ -1,21 +1,18 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Heart, ListMusic, Music4, Rocket, Sparkles, Wand2 } from 'lucide-react'
-import { toast } from 'sonner'
+import { ArrowRight, Heart, ListMusic, Music4, Rocket, Sparkles } from 'lucide-react'
 
 import { EmptyState } from '@/components/EmptyState'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { SecretaryCard } from '@/components/secretary/SecretaryCard'
 import { SongCard } from '@/components/songs/SongCard'
 import { NewSongDialog } from '@/components/songs/NewSongDialog'
-import { Button } from '@/components/ui/button'
 import { HISTORY_ICON } from '@/lib/constants'
 import { relativeTime } from '@/lib/format'
 import { useSongStore } from '@/store/useSongStore'
 
 export function DashboardPage() {
   const songs = useSongStore((s) => s.songs)
-  const loadSampleData = useSongStore((s) => s.loadSampleData)
 
   const stats = useMemo(
     () => ({
@@ -83,22 +80,7 @@ export function DashboardPage() {
           icon={ListMusic}
           title="まだ曲がありません"
           description="最初の曲を作成して、歌詞・Sunoプロンプト・MVプロンプト・YouTube情報を一箇所で管理しましょう。"
-          action={
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <NewSongDialog />
-              <Button
-                variant="outline"
-                className="gap-1.5"
-                onClick={() => {
-                  loadSampleData()
-                  toast.success('サンプルの曲を3件追加しました')
-                }}
-              >
-                <Wand2 className="h-4 w-4" />
-                サンプルデータを試す
-              </Button>
-            </div>
-          }
+          action={<NewSongDialog />}
         />
       ) : (
         <div className="grid gap-8 lg:grid-cols-3">

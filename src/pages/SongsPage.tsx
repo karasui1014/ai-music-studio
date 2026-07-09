@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Heart, ListMusic, Search, SearchX, Wand2 } from 'lucide-react'
-import { toast } from 'sonner'
+import { Heart, ListMusic, Search, SearchX } from 'lucide-react'
 
 import { EmptyState } from '@/components/EmptyState'
 import { NewSongDialog } from '@/components/songs/NewSongDialog'
@@ -21,7 +20,6 @@ import type { SongStatus } from '@/lib/types'
 
 export function SongsPage() {
   const songs = useSongStore((s) => s.songs)
-  const loadSampleData = useSongStore((s) => s.loadSampleData)
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<SongStatus | 'all'>('all')
   const [favoriteOnly, setFavoriteOnly] = useState(false)
@@ -90,22 +88,7 @@ export function SongsPage() {
           icon={ListMusic}
           title="まだ曲がありません"
           description="「新しい曲」から最初のプロジェクトを作成しましょう。"
-          action={
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <NewSongDialog />
-              <Button
-                variant="outline"
-                className="gap-1.5"
-                onClick={() => {
-                  loadSampleData()
-                  toast.success('サンプルの曲を3件追加しました')
-                }}
-              >
-                <Wand2 className="h-4 w-4" />
-                サンプルデータを試す
-              </Button>
-            </div>
-          }
+          action={<NewSongDialog />}
         />
       ) : filtered.length === 0 ? (
         <EmptyState

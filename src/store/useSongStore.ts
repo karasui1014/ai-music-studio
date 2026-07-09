@@ -2,7 +2,6 @@ import { create } from 'zustand'
 
 import { genId } from '@/lib/id'
 import { songRepository } from '@/lib/repository'
-import { createSeedSongs } from '@/lib/seed'
 import { STATUS_META } from '@/lib/constants'
 import type {
   HistoryEntry,
@@ -19,10 +18,6 @@ type SunoPromptInput = Pick<
   'title' | 'stylePrompt' | 'excludeStyles' | 'version' | 'memo'
 >
 type MvPromptInput = Pick<MvPrompt, 'title' | 'prompt' | 'tool' | 'memo'>
-
-import { STORAGE_KEYS } from '@/lib/storageKeys'
-
-const SEED_FLAG_KEY = STORAGE_KEYS.seeded
 
 function nowIso() {
   return new Date().toISOString()
@@ -54,7 +49,6 @@ interface SongStore {
   songs: Song[]
   hydrated: boolean
   hydrate: () => Promise<void>
-  loadSampleData: () => void
   createSong: (input?: NewSongInput) => Song
   removeSong: (id: string) => void
   toggleFavorite: (id: string) => void
@@ -98,14 +92,6 @@ export const useSongStore = create<SongStore>((set, get) => {
         set({ songs, hydrated: true })
       })()
       return hydratePromise
-    },
-
-    // opt-in only — every visitor sees a genuinely empty studio until they ask for a tour
-    loadSampleData: () => {
-      const seeded = createSeedSongs()
-      set({ songs: [...seeded, ...get().songs] })
-      for (const song of seeded) void songRepository.save(song)
-      window.localStorage.setItem(SEED_FLAG_KEY, '1')
     },
 
     createSong: (input) => {
