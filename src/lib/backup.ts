@@ -324,3 +324,17 @@ export async function restoreBackup(backup: BackupData): Promise<void> {
 
   window.location.reload()
 }
+
+/** Wipe every trace of local data (songs, secretary settings/avatar, theme), then reload
+ * to a genuinely first-run state. Irreversible unless the caller took a backup first. */
+export async function resetAllData(): Promise<void> {
+  for (const key of Object.values(STORAGE_KEYS)) {
+    window.localStorage.removeItem(key)
+  }
+  try {
+    await idbFiles.remove(AVATAR_IDB_KEY)
+  } catch {
+    // IndexedDB unavailable — the rest is still cleared
+  }
+  window.location.reload()
+}

@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
-import { FileArchive, FileDown, FileJson, FileText, FileUp, ShieldCheck } from 'lucide-react'
+import { FileArchive, FileDown, FileJson, FileText, FileUp, ShieldCheck, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -16,6 +17,7 @@ import {
   exportAsMarkdown,
   exportAsZip,
   parseBackupFile,
+  resetAllData,
   restoreBackup,
   type BackupData,
 } from '@/lib/backup'
@@ -142,6 +144,32 @@ export function DataPage() {
             <FileUp className="h-4 w-4" />
             ファイルを選択
           </Button>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <Trash2 className="h-4 w-4 text-destructive" />
+          <h2 className="text-sm font-semibold text-destructive">危険な操作</h2>
+        </div>
+        <div className="flex flex-col items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            曲・AI秘書の設定・画像などすべてのローカルデータを削除し、初めて開いた時の状態に戻します。
+          </p>
+          <ConfirmDialog
+            trigger={
+              <Button variant="destructive" className="shrink-0 gap-1.5">
+                <Trash2 className="h-4 w-4" />
+                全データを削除してリセット
+              </Button>
+            }
+            title="すべてのデータを削除しますか?"
+            description={`${songCount}曲を含む、このブラウザに保存された制作データ・AI秘書の設定・画像がすべて削除されます。事前にバックアップを取っていない場合、復元できません。`}
+            confirmLabel="削除してリセットする"
+            onConfirm={() => {
+              void resetAllData()
+            }}
+          />
         </div>
       </section>
 
