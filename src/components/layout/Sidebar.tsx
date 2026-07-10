@@ -1,5 +1,14 @@
 import { NavLink } from 'react-router-dom'
-import { Bot, Database, ExternalLink, LayoutDashboard, ListMusic, Sparkles, X } from 'lucide-react'
+import {
+  Bot,
+  CalendarDays,
+  Database,
+  ExternalLink,
+  LayoutDashboard,
+  ListMusic,
+  Sparkles,
+  X,
+} from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from './ThemeToggle'
@@ -10,6 +19,7 @@ import { EXTERNAL_TOOLS } from '@/lib/constants'
 const NAV_ITEMS = [
   { to: '/', label: 'ダッシュボード', icon: LayoutDashboard, end: true },
   { to: '/songs', label: '曲一覧', icon: ListMusic, end: false },
+  { to: '/events', label: 'イベント予定', icon: CalendarDays, end: false },
   { to: '/secretary', label: 'AI秘書', icon: Bot, end: false },
   { to: '/data', label: 'データ管理', icon: Database, end: false },
 ]

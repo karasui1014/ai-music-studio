@@ -63,6 +63,7 @@ interface SongStore {
   removeMvPrompt: (id: string, promptId: string) => void
   updateYoutube: (id: string, patch: Partial<YoutubePost>) => void
   addNote: (id: string, message: string) => void
+  markCompleted: (id: string) => void
 }
 
 export const useSongStore = create<SongStore>((set, get) => {
@@ -212,6 +213,15 @@ export const useSongStore = create<SongStore>((set, get) => {
     addNote: (id, message) => {
       mutate(id, (song) => {
         song.history.unshift(makeHistory('note_added', message))
+        return song
+      })
+    },
+
+    markCompleted: (id) => {
+      mutate(id, (song) => {
+        if (song.completedAt) return song
+        song.completedAt = nowIso()
+        song.history.unshift(makeHistory('completed', 'ひとまず完成にしました🎉'))
         return song
       })
     },

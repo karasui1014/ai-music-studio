@@ -5,10 +5,27 @@ import { STATUS_META } from '@/lib/constants'
 import { formatDate } from '@/lib/format'
 import { DEFAULT_SECRETARY_SETTINGS, type SecretarySettings } from '@/lib/secretary'
 import { AVATAR_IDB_KEY, STORAGE_KEYS } from '@/lib/storageKeys'
-import type { Song, SongStatus } from '@/lib/types'
+import type { Song, SongStatus, StudioEvent } from '@/lib/types'
 
 const MAX_IMPORT_BYTES = 100 * 1024 * 1024 // 100MB — generous, but bounds memory use from a hostile file
 const VALID_STATUSES: SongStatus[] = ['idea', 'lyrics', 'suno', 'mv', 'published']
+
+/** Coerce an unknown value into a well-formed StudioEvent, dropping anything unusable. */
+function normalizeEvent(raw: unknown): StudioEvent | null {
+  if (typeof raw !== 'object' || raw === null) return null
+  const r = raw as Record<string, unknown>
+  if (typeof r.id !== 'string' || typeof r.title !== 'string' || typeof r.date !== 'string') return null
+  const nowFallback = new Date().toISOString()
+  return {
+    id: r.id,
+    title: r.title,
+    date: r.date,
+    time: typeof r.time === 'string' ? r.time : undefined,
+    memo: typeof r.memo === 'string' ? r.memo : undefined,
+    createdAt: typeof r.createdAt === 'string' ? r.createdAt : nowFallback,
+    updatedAt: typeof r.updatedAt === 'string' ? r.updatedAt : nowFallback,
+  }
+}
 
 /** Coerce an unknown value into a well-formed Song, defaulting any missing/malformed
  * fields so a corrupted or hand-edited backup can never crash the app on render. */
@@ -28,6 +45,7 @@ function normalizeSong(raw: unknown): Song | null {
     mvPrompts: Array.isArray(r.mvPrompts) ? (r.mvPrompts as Song['mvPrompts']) : [],
     youtube: typeof r.youtube === 'object' && r.youtube !== null ? (r.youtube as Song['youtube']) : {},
     history: Array.isArray(r.history) ? (r.history as Song['history']) : [],
+    completedAt: typeof r.completedAt === 'string' ? r.completedAt : undefined,
     createdAt: typeof r.createdAt === 'string' ? r.createdAt : nowFallback,
     updatedAt: typeof r.updatedAt === 'string' ? r.updatedAt : nowFallback,
   }
@@ -38,6 +56,7 @@ export interface BackupData {
   version: 1
   exportedAt: string
   songs: Song[]
+  events: StudioEvent[]
   secretary: {
     settings: SecretarySettings
     activeDays: string[]
@@ -76,6 +95,7 @@ function base64ToU8(base64: string): Uint8Array {
 
 export async function buildBackup(): Promise<BackupData> {
   const songs = readJson<Song[]>(STORAGE_KEYS.songs, [])
+  const events = readJson<StudioEvent[]>(STORAGE_KEYS.events, [])
   const settings = {
     ...DEFAULT_SECRETARY_SETTINGS,
     ...readJson<Partial<SecretarySettings>>(STORAGE_KEYS.secretarySettings, {}),
@@ -99,6 +119,7 @@ export async function buildBackup(): Promise<BackupData> {
     version: 1,
     exportedAt: new Date().toISOString(),
     songs,
+    events,
     secretary: { settings, activeDays, celebratedMilestones, avatar },
     theme,
   }
@@ -286,12 +307,16 @@ export async function parseBackupFile(file: File): Promise<BackupData> {
   }
 
   const songs = parsed.songs.map(normalizeSong).filter((s): s is Song => s !== null)
-  return { ...parsed, songs } as BackupData
+  const events = Array.isArray(parsed.events)
+    ? parsed.events.map(normalizeEvent).filter((e): e is StudioEvent => e !== null)
+    : []
+  return { ...parsed, songs, events } as BackupData
 }
 
 /** Replace all local data with the backup, then reload the page. */
 export async function restoreBackup(backup: BackupData): Promise<void> {
   window.localStorage.setItem(STORAGE_KEYS.songs, JSON.stringify(backup.songs))
+  window.localStorage.setItem(STORAGE_KEYS.events, JSON.stringify(backup.events ?? []))
   window.localStorage.setItem(
     STORAGE_KEYS.secretarySettings,
     JSON.stringify(backup.secretary?.settings ?? DEFAULT_SECRETARY_SETTINGS),

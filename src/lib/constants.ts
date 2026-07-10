@@ -12,6 +12,7 @@ import {
   Captions,
   SlidersHorizontal,
   MessageSquareText,
+  PartyPopper,
 } from 'lucide-react'
 
 export const STATUS_ORDER: SongStatus[] = ['idea', 'lyrics', 'suno', 'mv', 'published']
@@ -64,6 +65,7 @@ export const HISTORY_ICON: Record<HistoryEventType, typeof Sparkles> = {
   mv_prompt_removed: Clapperboard,
   youtube_updated: SquarePlay,
   note_added: StickyNote,
+  completed: PartyPopper,
 }
 
 export interface ExternalTool {

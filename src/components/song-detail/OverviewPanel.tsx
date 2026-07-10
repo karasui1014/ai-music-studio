@@ -1,10 +1,14 @@
-import { Check, Clapperboard, Music2, PenLine, SquarePlay } from 'lucide-react'
+import { Check, Clapperboard, Music2, PartyPopper, PenLine, SquarePlay } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { STATUS_META } from '@/lib/constants'
 import { formatDate, relativeTime } from '@/lib/format'
+import { getProgress } from '@/lib/leveling'
 import { cn } from '@/lib/utils'
+import { useSongStore } from '@/store/useSongStore'
 import type { Song } from '@/lib/types'
 
 export function OverviewPanel({
@@ -14,6 +18,9 @@ export function OverviewPanel({
   song: Song
   onNavigateTab: (tab: string) => void
 }) {
+  const songs = useSongStore((s) => s.songs)
+  const markCompleted = useSongStore((s) => s.markCompleted)
+
   const checklist = [
     { key: 'lyrics', label: '歌詞を書く', done: song.lyrics.trim().length > 0, icon: PenLine, tab: 'lyrics' },
     { key: 'suno', label: 'Sunoプロンプトを保存', done: song.sunoPrompts.length > 0, icon: Music2, tab: 'suno' },
@@ -21,6 +28,17 @@ export function OverviewPanel({
     { key: 'youtube', label: 'YouTube情報を記録', done: !!song.youtube.url, icon: SquarePlay, tab: 'youtube' },
   ]
   const doneCount = checklist.filter((c) => c.done).length
+
+  const handleComplete = () => {
+    const before = getProgress(songs)
+    markCompleted(song.id)
+    const after = getProgress(useSongStore.getState().songs)
+    if (after.level > before.level) {
+      toast.success(`レベルアップ!Lv.${after.level}「${after.title}」になりました🎉`)
+    } else {
+      toast.success('お疲れ様でした!ひとまず完成にしました🎉')
+    }
+  }
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -77,6 +95,33 @@ export function OverviewPanel({
             <dd>{relativeTime(song.updatedAt)}</dd>
           </div>
         </dl>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm lg:col-span-3">
+        {song.completedAt ? (
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+              <PartyPopper className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-sm font-medium">ひとまず完成済みです</p>
+              <p className="text-xs text-muted-foreground">{formatDate(song.completedAt)}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+            <div>
+              <p className="text-sm font-medium">この曲、ひとまず完成しましたか?</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                完成にすると経験値が貯まり、秘書が次のテーマを提案してくれます。
+              </p>
+            </div>
+            <Button className="shrink-0 gap-1.5" onClick={handleComplete}>
+              <PartyPopper className="h-4 w-4" />
+              ひとまず完成にする
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -4,6 +4,7 @@ import { ArrowRight, Heart, ListMusic, Music4, Rocket, Sparkles } from 'lucide-r
 
 import { EmptyState } from '@/components/EmptyState'
 import { StatCard } from '@/components/dashboard/StatCard'
+import { UpcomingEventsCard } from '@/components/events/UpcomingEventsCard'
 import { SecretaryCard } from '@/components/secretary/SecretaryCard'
 import { SongCard } from '@/components/songs/SongCard'
 import { NewSongDialog } from '@/components/songs/NewSongDialog'
@@ -47,6 +48,8 @@ export function DashboardPage() {
       </div>
 
       <SecretaryCard />
+
+      <UpcomingEventsCard />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard

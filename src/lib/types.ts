@@ -43,6 +43,7 @@ export type HistoryEventType =
   | 'mv_prompt_removed'
   | 'youtube_updated'
   | 'note_added'
+  | 'completed'
 
 export interface HistoryEntry {
   id: string
@@ -62,6 +63,7 @@ export interface Song {
   mvPrompts: MvPrompt[]
   youtube: YoutubePost
   history: HistoryEntry[]
+  completedAt?: string
   createdAt: string
   updatedAt: string
 }
@@ -69,3 +71,15 @@ export interface Song {
 export type NewSongInput = Partial<
   Pick<Song, 'title' | 'genre' | 'status' | 'lyrics'>
 >
+
+export interface StudioEvent {
+  id: string
+  title: string
+  date: string // 'YYYY-MM-DD'
+  time?: string // 'HH:mm'
+  memo?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type EventInput = Pick<StudioEvent, 'title' | 'date' | 'time' | 'memo'>
