@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
   activityDays: 'ai-music-studio:activity-days:v1',
   celebratedMilestones: 'ai-music-studio:celebrated-milestones:v1',
   events: 'ai-music-studio:events:v1',
+  noticeShown: 'ai-music-studio:notice-shown:v1',
 } as const
 
 export const AVATAR_IDB_KEY = 'secretary-avatar'
