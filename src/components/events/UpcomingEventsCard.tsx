@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
-import { CalendarDays } from 'lucide-react'
+import { CalendarDays, History } from 'lucide-react'
 
 import { EventDialog } from '@/components/events/EventDialog'
 import { Badge } from '@/components/ui/badge'
@@ -34,8 +34,12 @@ function DateBadge({ event, size }: { event: StudioEvent; size: 'lg' | 'md' }) {
 export function UpcomingEventsCard() {
   const events = useEventStore((s) => s.events)
 
-  const upcoming = useMemo(() => {
-    return sortByUpcoming(events).filter((e) => daysUntil(e) >= 0)
+  const { upcoming, pastCount } = useMemo(() => {
+    const sorted = sortByUpcoming(events)
+    return {
+      upcoming: sorted.filter((e) => daysUntil(e) >= 0),
+      pastCount: sorted.filter((e) => daysUntil(e) < 0).length,
+    }
   }, [events])
 
   return (
@@ -46,7 +50,7 @@ export function UpcomingEventsCard() {
           <h2 className="text-sm font-semibold">参加予定のイベント</h2>
         </div>
         <div className="flex items-center gap-3">
-          {upcoming.length > 0 && (
+          {events.length > 0 && (
             <Link to="/events" className="text-xs font-medium text-primary hover:underline">
               すべて見る
             </Link>
@@ -67,6 +71,15 @@ export function UpcomingEventsCard() {
       {upcoming.length === 0 && (
         <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border py-8 text-center">
           <p className="text-sm text-muted-foreground">参加予定のフェスやイベントはまだありません</p>
+          {pastCount > 0 && (
+            <Link
+              to="/events"
+              className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+            >
+              <History className="h-3.5 w-3.5" />
+              過去のイベント履歴を見る({pastCount}件)
+            </Link>
+          )}
           <EventDialog />
         </div>
       )}
