@@ -5,6 +5,7 @@ import { songRepository } from '@/lib/repository'
 import { STATUS_META } from '@/lib/constants'
 import type {
   HistoryEntry,
+  LyricsVersion,
   MvPrompt,
   NewSongInput,
   Song,
@@ -18,6 +19,10 @@ type SunoPromptInput = Pick<
   'title' | 'stylePrompt' | 'excludeStyles' | 'version' | 'memo'
 >
 type MvPromptInput = Pick<MvPrompt, 'title' | 'prompt' | 'tool' | 'memo'>
+type LyricsVersionInput = Pick<LyricsVersion, 'label' | 'lyrics' | 'source'>
+
+/** 歌詞バージョンの保存上限(古いものから削る) */
+const MAX_LYRICS_VERSIONS = 20
 
 function nowIso() {
   return new Date().toISOString()
@@ -55,6 +60,11 @@ interface SongStore {
   updateBasicInfo: (id: string, patch: { title?: string; genre?: string }) => void
   updateStatus: (id: string, status: SongStatus) => void
   updateLyrics: (id: string, lyrics: string) => void
+  /** 現在の歌詞を消さずに、歌詞のバージョン(候補)を追加する */
+  addLyricsVersion: (id: string, input: LyricsVersionInput) => void
+  removeLyricsVersion: (id: string, versionId: string) => void
+  /** 指定バージョンへ歌詞を戻す(現在の歌詞は自動でバージョンとして退避) */
+  restoreLyricsVersion: (id: string, versionId: string) => void
   addSunoPrompt: (id: string, input: SunoPromptInput) => void
   updateSunoPrompt: (id: string, promptId: string, patch: Partial<SunoPromptInput>) => void
   removeSunoPrompt: (id: string, promptId: string) => void
@@ -63,6 +73,7 @@ interface SongStore {
   removeMvPrompt: (id: string, promptId: string) => void
   updateYoutube: (id: string, patch: Partial<YoutubePost>) => void
   addNote: (id: string, message: string) => void
+  addToolHistory: (id: string, message: string) => void
   markCompleted: (id: string) => void
 }
 
@@ -140,6 +151,42 @@ export const useSongStore = create<SongStore>((set, get) => {
       })
     },
 
+    addLyricsVersion: (id, input) => {
+      mutate(id, (song) => {
+        const version: LyricsVersion = { id: genId(), createdAt: nowIso(), ...input }
+        song.lyricsVersions = [version, ...(song.lyricsVersions ?? [])].slice(0, MAX_LYRICS_VERSIONS)
+        return song
+      })
+    },
+
+    removeLyricsVersion: (id, versionId) => {
+      mutate(id, (song) => {
+        song.lyricsVersions = (song.lyricsVersions ?? []).filter((v) => v.id !== versionId)
+        return song
+      })
+    },
+
+    restoreLyricsVersion: (id, versionId) => {
+      mutate(id, (song) => {
+        const version = (song.lyricsVersions ?? []).find((v) => v.id === versionId)
+        if (!version) return song
+        // 今の歌詞を失わないよう、先にバージョンとして退避してから戻す
+        const current: LyricsVersion = {
+          id: genId(),
+          label: '復元前の歌詞',
+          lyrics: song.lyrics,
+          source: 'manual',
+          createdAt: nowIso(),
+        }
+        song.lyricsVersions = [current, ...(song.lyricsVersions ?? [])].slice(0, MAX_LYRICS_VERSIONS)
+        song.lyrics = version.lyrics
+        song.history.unshift(
+          makeHistory('lyrics_updated', `歌詞をバージョン「${version.label}」に戻しました`),
+        )
+        return song
+      })
+    },
+
     addSunoPrompt: (id, input) => {
       mutate(id, (song) => {
         const timestamp = nowIso()
@@ -213,6 +260,13 @@ export const useSongStore = create<SongStore>((set, get) => {
     addNote: (id, message) => {
       mutate(id, (song) => {
         song.history.unshift(makeHistory('note_added', message))
+        return song
+      })
+    },
+
+    addToolHistory: (id, message) => {
+      mutate(id, (song) => {
+        song.history.unshift(makeHistory('tool_run', message))
         return song
       })
     },

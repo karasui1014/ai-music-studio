@@ -13,6 +13,8 @@ import {
   SlidersHorizontal,
   MessageSquareText,
   PartyPopper,
+  Guitar,
+  Wand2,
 } from 'lucide-react'
 
 export const STATUS_ORDER: SongStatus[] = ['idea', 'lyrics', 'suno', 'mv', 'published']
@@ -66,10 +68,11 @@ export const HISTORY_ICON: Record<HistoryEventType, typeof Sparkles> = {
   youtube_updated: SquarePlay,
   note_added: StickyNote,
   completed: PartyPopper,
+  tool_run: Wand2,
 }
 
 export interface ExternalTool {
-  key: 'storyboard' | 'subtitle' | 'mastering' | 'stylePrompt' | 'review'
+  key: 'storyboard' | 'subtitle' | 'guitarChordTab' | 'mastering' | 'stylePrompt' | 'review'
   name: string
   description: string
   url: string
@@ -90,6 +93,13 @@ export const EXTERNAL_TOOLS: ExternalTool[] = [
     description: '歌詞から字幕を自動生成する',
     url: 'https://karasui1014.github.io/lofi-detective-website/lyric/',
     icon: Captions,
+  },
+  {
+    key: 'guitarChordTab',
+    name: 'ギターコードTAB',
+    description: 'ギター音源からコード進行とTAB譜を作る',
+    url: 'https://karasui1014.github.io/guitar-chord-tab/',
+    icon: Guitar,
   },
   {
     key: 'mastering',

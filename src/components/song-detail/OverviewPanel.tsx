@@ -1,4 +1,5 @@
-import { Check, Clapperboard, Music2, PartyPopper, PenLine, SquarePlay } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Check, Clapperboard, Music2, PartyPopper, PenLine, SquarePlay, Wand2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -95,6 +96,23 @@ export function OverviewPanel({
             <dd>{relativeTime(song.updatedAt)}</dd>
           </div>
         </dl>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm lg:col-span-3">
+        <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+          <div>
+            <p className="text-sm font-medium">この曲を制作ツールで改善する</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              AIプロデューサーが歌詞・Sunoプロンプトを分析し、次に直すポイントを提案します。
+            </p>
+          </div>
+          <Button asChild variant="outline" className="shrink-0 gap-1.5">
+            <Link to={`/tools/ai-producer?song=${song.id}`}>
+              <Wand2 className="h-4 w-4" />
+              AIプロデューサーを開く
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-5 shadow-sm lg:col-span-3">

@@ -5,6 +5,7 @@ import { STATUS_META } from '@/lib/constants'
 import { formatDate } from '@/lib/format'
 import { DEFAULT_SECRETARY_SETTINGS, type SecretarySettings } from '@/lib/secretary'
 import { AVATAR_IDB_KEY, STORAGE_KEYS } from '@/lib/storageKeys'
+import type { ToolRunRecord } from '@/lib/tools/types'
 import type { Song, SongStatus, StudioEvent } from '@/lib/types'
 
 const MAX_IMPORT_BYTES = 100 * 1024 * 1024 // 100MB — generous, but bounds memory use from a hostile file
@@ -27,6 +28,16 @@ function normalizeEvent(raw: unknown): StudioEvent | null {
   }
 }
 
+/** Keep only tool-run records that have the minimum fields the UI relies on. */
+function normalizeToolRun(raw: unknown): ToolRunRecord | null {
+  if (typeof raw !== 'object' || raw === null) return null
+  const r = raw as Record<string, unknown>
+  if (typeof r.id !== 'string' || typeof r.toolId !== 'string' || typeof r.createdAt !== 'string') return null
+  if (typeof r.input !== 'object' || r.input === null) return null
+  if (typeof r.result !== 'object' || r.result === null) return null
+  return raw as ToolRunRecord
+}
+
 /** Coerce an unknown value into a well-formed Song, defaulting any missing/malformed
  * fields so a corrupted or hand-edited backup can never crash the app on render. */
 function normalizeSong(raw: unknown): Song | null {
@@ -41,6 +52,7 @@ function normalizeSong(raw: unknown): Song | null {
     status: VALID_STATUSES.includes(r.status as SongStatus) ? (r.status as SongStatus) : 'idea',
     favorite: typeof r.favorite === 'boolean' ? r.favorite : false,
     lyrics: typeof r.lyrics === 'string' ? r.lyrics : '',
+    lyricsVersions: Array.isArray(r.lyricsVersions) ? (r.lyricsVersions as Song['lyricsVersions']) : undefined,
     sunoPrompts: Array.isArray(r.sunoPrompts) ? (r.sunoPrompts as Song['sunoPrompts']) : [],
     mvPrompts: Array.isArray(r.mvPrompts) ? (r.mvPrompts as Song['mvPrompts']) : [],
     youtube: typeof r.youtube === 'object' && r.youtube !== null ? (r.youtube as Song['youtube']) : {},
@@ -57,6 +69,8 @@ export interface BackupData {
   exportedAt: string
   songs: Song[]
   events: StudioEvent[]
+  /** 制作ツールの実行履歴(v1バックアップには存在しない場合がある) */
+  toolRuns?: ToolRunRecord[]
   secretary: {
     settings: SecretarySettings
     activeDays: string[]
@@ -96,6 +110,7 @@ function base64ToU8(base64: string): Uint8Array {
 export async function buildBackup(): Promise<BackupData> {
   const songs = readJson<Song[]>(STORAGE_KEYS.songs, [])
   const events = readJson<StudioEvent[]>(STORAGE_KEYS.events, [])
+  const toolRuns = readJson<ToolRunRecord[]>(STORAGE_KEYS.toolRuns, [])
   const settings = {
     ...DEFAULT_SECRETARY_SETTINGS,
     ...readJson<Partial<SecretarySettings>>(STORAGE_KEYS.secretarySettings, {}),
@@ -120,6 +135,7 @@ export async function buildBackup(): Promise<BackupData> {
     exportedAt: new Date().toISOString(),
     songs,
     events,
+    toolRuns,
     secretary: { settings, activeDays, celebratedMilestones, avatar },
     theme,
   }
@@ -310,13 +326,17 @@ export async function parseBackupFile(file: File): Promise<BackupData> {
   const events = Array.isArray(parsed.events)
     ? parsed.events.map(normalizeEvent).filter((e): e is StudioEvent => e !== null)
     : []
-  return { ...parsed, songs, events } as BackupData
+  const toolRuns = Array.isArray(parsed.toolRuns)
+    ? parsed.toolRuns.map(normalizeToolRun).filter((r): r is ToolRunRecord => r !== null)
+    : []
+  return { ...parsed, songs, events, toolRuns } as BackupData
 }
 
 /** Replace all local data with the backup, then reload the page. */
 export async function restoreBackup(backup: BackupData): Promise<void> {
   window.localStorage.setItem(STORAGE_KEYS.songs, JSON.stringify(backup.songs))
   window.localStorage.setItem(STORAGE_KEYS.events, JSON.stringify(backup.events ?? []))
+  window.localStorage.setItem(STORAGE_KEYS.toolRuns, JSON.stringify(backup.toolRuns ?? []))
   window.localStorage.setItem(
     STORAGE_KEYS.secretarySettings,
     JSON.stringify(backup.secretary?.settings ?? DEFAULT_SECRETARY_SETTINGS),

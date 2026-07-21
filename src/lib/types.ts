@@ -44,11 +44,27 @@ export type HistoryEventType =
   | 'youtube_updated'
   | 'note_added'
   | 'completed'
+  | 'tool_run'
 
 export interface HistoryEntry {
   id: string
   type: HistoryEventType
   message: string
+  createdAt: string
+}
+
+/**
+ * 歌詞の保存バージョン(候補)。
+ * 歌詞添削AIなどが「今の歌詞を消さずに」修正版や添削前の原文を残すために使う。
+ * 既存データには存在しないためオプショナル(未定義=バージョンなし)。
+ */
+export interface LyricsVersion {
+  id: string
+  /** 例: '添削前の歌詞', '歌詞添削AI 修正版' */
+  label: string
+  lyrics: string
+  /** どこから来たバージョンか(例: 'lyrics-review', 'manual') */
+  source: string
   createdAt: string
 }
 
@@ -59,6 +75,8 @@ export interface Song {
   status: SongStatus
   favorite: boolean
   lyrics: string
+  /** 歌詞の保存バージョン(新しい順)。無い曲は undefined のまま */
+  lyricsVersions?: LyricsVersion[]
   sunoPrompts: SunoPrompt[]
   mvPrompts: MvPrompt[]
   youtube: YoutubePost

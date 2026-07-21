@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Clapperboard, Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -25,6 +26,12 @@ export function MvPromptsPanel({ song }: { song: Song }) {
           MV生成AIに渡す映像プロンプトを保存しておけます
         </p>
         <div className="flex flex-wrap items-center gap-1.5">
+          <Button asChild variant="outline" size="sm" className="gap-1.5">
+            <Link to={`/tools/mv-idea?song=${song.id}`}>
+              <Clapperboard className="h-4 w-4" />
+              MV企画を作る
+            </Link>
+          </Button>
           <ExternalToolLink tool={STORYBOARD_TOOL} label="絵コンテ" />
           <ExternalToolLink tool={SUBTITLE_TOOL} label="字幕" />
           <MvPromptDialog

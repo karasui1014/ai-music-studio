@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   ListMusic,
   Sparkles,
+  Wrench,
   X,
 } from 'lucide-react'
 
@@ -19,6 +20,7 @@ import { EXTERNAL_TOOLS } from '@/lib/constants'
 const NAV_ITEMS = [
   { to: '/', label: 'ダッシュボード', icon: LayoutDashboard, end: true },
   { to: '/songs', label: '曲一覧', icon: ListMusic, end: false },
+  { to: '/tools', label: '制作ツール', icon: Wrench, end: false },
   { to: '/events', label: 'イベント予定', icon: CalendarDays, end: false },
   { to: '/secretary', label: 'AI秘書', icon: Bot, end: false },
   { to: '/data', label: 'データ管理', icon: Database, end: false },
@@ -92,7 +94,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
           ))}
 
           <p className="mt-6 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70">
-            制作ツール
+            外部ツール
           </p>
           <div className="mt-1 flex flex-col gap-0.5">
             {EXTERNAL_TOOLS.map((tool) => (
