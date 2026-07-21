@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import {
   AlertTriangle,
   ClipboardList,
   Gauge,
   HelpCircle,
   History,
+  Library,
   ListOrdered,
   Music2,
   RefreshCcw,
@@ -23,6 +25,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatDate } from '@/lib/format'
 import { getProviderMeta } from '@/lib/tools/provider'
+import { buildProducerSearchQuery } from '@/lib/tools/prompt-dex/search'
 import { cn } from '@/lib/utils'
 import { useSongStore } from '@/store/useSongStore'
 import type { RegenerableSection } from '@/lib/tools/ai-producer/analyze'
@@ -208,6 +211,24 @@ export function AiProducerResultView({
         <p className="rounded-xl bg-amber-500/10 px-4 py-3 text-sm font-medium text-amber-700 dark:text-amber-400">
           {result.biggestProblem}
         </p>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2.5">
+          <p className="text-xs text-muted-foreground">
+            この曲の条件(ジャンル・狙い・BPM・媒体)に合うプロンプトを図鑑から探せます。
+          </p>
+          <Button variant="outline" size="sm" className="gap-1.5" asChild>
+            <Link
+              to={buildProducerSearchQuery({
+                genre: run.input.genre,
+                aim: run.input.aim,
+                media: run.input.media,
+                bpm: run.input.bpm,
+              })}
+            >
+              <Library className="h-3.5 w-3.5" />
+              プロンプト図鑑で探す
+            </Link>
+          </Button>
+        </div>
       </SectionCard>
 
       {result.suggestions.length > 0 && (

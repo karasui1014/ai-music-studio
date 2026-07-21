@@ -53,7 +53,19 @@
 `src/components/song-detail/OverviewPanel.tsx` に「この曲を制作ツールで改善する」カードがある。
 歌詞に関わるツールは `src/components/song-detail/LyricsPanel.tsx`(歌詞タブ)からも開ける(歌詞添削AIが実例)。
 MVに関わるツールは `src/components/song-detail/MvPromptsPanel.tsx`(MVタブ)からも開ける(MVアイデア生成AIが実例)。
+Sunoプロンプトに関わるツールは `src/components/song-detail/SunoPromptsPanel.tsx`(Sunoタブ)からも開ける(プロンプト図鑑が実例)。
 ツール側は `?song=<songId>` クエリで曲を受け取り、自動入力する(HashRouterの `useSearchParams` を使用)。
+
+## 実行履歴を持たない参照系ツール(プロンプト図鑑が実例)
+
+すべてのツールが `ToolRunRecord`(実行履歴)を持つ必要はない。プロンプト図鑑のような
+「探して反映する」参照系ツールは、`ToolId` に ID を足すだけで `ToolRunRecord` ユニオンには追加しない。
+独自データ(自分用プロンプト/お気に入り)は専用の localStorage キー+専用ストア
+(`src/store/usePromptDexStore.ts`)で持ち、`src/lib/tools/<tool-id>/repository.ts` に**データ取得層を分離**する
+(将来の外部DB移行に備える。builtin データの差し替え口を1箇所に閉じ込める)。
+ツール独自データを全体バックアップに含める場合は、`STORAGE_KEYS` にキーを足し、
+`src/lib/backup.ts` の `buildBackup`/`parseBackupFile`/`restoreBackup` に **toolRuns と同じ要領で** 追記する
+(古いバックアップに無くても壊れないよう防御的に読む)。`resetAllData` は STORAGE_KEYS を総なめするので追加不要。
 
 ## 歌詞バージョン(候補)
 

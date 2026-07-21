@@ -5,6 +5,7 @@ import { STATUS_META } from '@/lib/constants'
 import { formatDate } from '@/lib/format'
 import { DEFAULT_SECRETARY_SETTINGS, type SecretarySettings } from '@/lib/secretary'
 import { AVATAR_IDB_KEY, STORAGE_KEYS } from '@/lib/storageKeys'
+import { normalizeEntry, type PromptEntry } from '@/lib/tools/prompt-dex/types'
 import type { ToolRunRecord } from '@/lib/tools/types'
 import type { Song, SongStatus, StudioEvent } from '@/lib/types'
 
@@ -71,6 +72,8 @@ export interface BackupData {
   events: StudioEvent[]
   /** 制作ツールの実行履歴(v1バックアップには存在しない場合がある) */
   toolRuns?: ToolRunRecord[]
+  /** プロンプト図鑑の自分用データ(古いバックアップには存在しない場合がある) */
+  promptDex?: { entries: PromptEntry[]; favorites: string[] }
   secretary: {
     settings: SecretarySettings
     activeDays: string[]
@@ -111,6 +114,10 @@ export async function buildBackup(): Promise<BackupData> {
   const songs = readJson<Song[]>(STORAGE_KEYS.songs, [])
   const events = readJson<StudioEvent[]>(STORAGE_KEYS.events, [])
   const toolRuns = readJson<ToolRunRecord[]>(STORAGE_KEYS.toolRuns, [])
+  const promptDex = {
+    entries: readJson<PromptEntry[]>(STORAGE_KEYS.promptDexUser, []),
+    favorites: readJson<string[]>(STORAGE_KEYS.promptDexFavorites, []),
+  }
   const settings = {
     ...DEFAULT_SECRETARY_SETTINGS,
     ...readJson<Partial<SecretarySettings>>(STORAGE_KEYS.secretarySettings, {}),
@@ -136,6 +143,7 @@ export async function buildBackup(): Promise<BackupData> {
     songs,
     events,
     toolRuns,
+    promptDex,
     secretary: { settings, activeDays, celebratedMilestones, avatar },
     theme,
   }
@@ -329,7 +337,18 @@ export async function parseBackupFile(file: File): Promise<BackupData> {
   const toolRuns = Array.isArray(parsed.toolRuns)
     ? parsed.toolRuns.map(normalizeToolRun).filter((r): r is ToolRunRecord => r !== null)
     : []
-  return { ...parsed, songs, events, toolRuns } as BackupData
+  const rawPromptDex = parsed.promptDex as { entries?: unknown; favorites?: unknown } | undefined
+  const promptDex = {
+    entries: Array.isArray(rawPromptDex?.entries)
+      ? rawPromptDex.entries
+          .map((e) => normalizeEntry(e, 'user'))
+          .filter((e): e is PromptEntry => e !== null)
+      : [],
+    favorites: Array.isArray(rawPromptDex?.favorites)
+      ? rawPromptDex.favorites.filter((x): x is string => typeof x === 'string')
+      : [],
+  }
+  return { ...parsed, songs, events, toolRuns, promptDex } as BackupData
 }
 
 /** Replace all local data with the backup, then reload the page. */
@@ -337,6 +356,14 @@ export async function restoreBackup(backup: BackupData): Promise<void> {
   window.localStorage.setItem(STORAGE_KEYS.songs, JSON.stringify(backup.songs))
   window.localStorage.setItem(STORAGE_KEYS.events, JSON.stringify(backup.events ?? []))
   window.localStorage.setItem(STORAGE_KEYS.toolRuns, JSON.stringify(backup.toolRuns ?? []))
+  window.localStorage.setItem(
+    STORAGE_KEYS.promptDexUser,
+    JSON.stringify(backup.promptDex?.entries ?? []),
+  )
+  window.localStorage.setItem(
+    STORAGE_KEYS.promptDexFavorites,
+    JSON.stringify(backup.promptDex?.favorites ?? []),
+  )
   window.localStorage.setItem(
     STORAGE_KEYS.secretarySettings,
     JSON.stringify(backup.secretary?.settings ?? DEFAULT_SECRETARY_SETTINGS),

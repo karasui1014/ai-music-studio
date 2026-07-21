@@ -6,8 +6,12 @@ import type {
 } from '@/lib/tools/lyrics-review/types'
 import type { MvIdeaInput, MvIdeaResult } from '@/lib/tools/mv-idea/types'
 
-/** 内蔵制作ツールのID。新しいツールを追加したらここへ足す */
-export type ToolId = 'ai-producer' | 'lyrics-review' | 'mv-idea'
+/**
+ * 内蔵制作ツールのID。新しいツールを追加したらここへ足す。
+ * prompt-dex(プロンプト図鑑)は分析結果を生成しない参照ツールのため、
+ * ToolRunRecord ユニオンには対応レコードを持たない(実行履歴を残さない)。
+ */
+export type ToolId = 'ai-producer' | 'lyrics-review' | 'mv-idea' | 'prompt-dex'
 
 /**
  * AIプロバイダーのID。

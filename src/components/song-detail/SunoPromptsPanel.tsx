@@ -1,4 +1,5 @@
-import { Music2, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Library, Music2, Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { CopyButton } from '@/components/CopyButton'
@@ -25,6 +26,12 @@ export function SunoPromptsPanel({ song }: { song: Song }) {
           Sunoに貼り付けるスタイルプロンプトをバージョン管理できます
         </p>
         <div className="flex flex-wrap items-center gap-1.5">
+          <Button variant="outline" size="sm" className="gap-1.5" asChild>
+            <Link to={`/tools/prompt-dex?song=${song.id}`}>
+              <Library className="h-3.5 w-3.5" />
+              プロンプト図鑑
+            </Link>
+          </Button>
           <ExternalToolLink tool={STYLE_PROMPT_TOOL} label="プロンプト工房" />
           <ExternalToolLink tool={MASTERING_TOOL} label="マスタリング" />
           <SunoPromptDialog

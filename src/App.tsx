@@ -15,7 +15,9 @@ import { ToolsPage } from '@/pages/ToolsPage'
 import { AiProducerPage } from '@/pages/tools/AiProducerPage'
 import { LyricsReviewPage } from '@/pages/tools/LyricsReviewPage'
 import { MvIdeaPage } from '@/pages/tools/MvIdeaPage'
+import { PromptDexPage } from '@/pages/tools/PromptDexPage'
 import { useEventStore } from '@/store/useEventStore'
+import { usePromptDexStore } from '@/store/usePromptDexStore'
 import { useSecretaryStore } from '@/store/useSecretaryStore'
 import { useSongStore } from '@/store/useSongStore'
 import { useToolRunStore } from '@/store/useToolRunStore'
@@ -25,13 +27,15 @@ function App() {
   const hydrateSecretary = useSecretaryStore((s) => s.hydrate)
   const hydrateEvents = useEventStore((s) => s.hydrate)
   const hydrateToolRuns = useToolRunStore((s) => s.hydrate)
+  const hydratePromptDex = usePromptDexStore((s) => s.hydrate)
 
   useEffect(() => {
     void hydrate()
     void hydrateSecretary()
     hydrateEvents()
     hydrateToolRuns()
-  }, [hydrate, hydrateSecretary, hydrateEvents, hydrateToolRuns])
+    hydratePromptDex()
+  }, [hydrate, hydrateSecretary, hydrateEvents, hydrateToolRuns, hydratePromptDex])
 
   return (
     <ThemeProvider>
@@ -46,6 +50,7 @@ function App() {
               <Route path="tools/ai-producer" element={<AiProducerPage />} />
               <Route path="tools/lyrics-review" element={<LyricsReviewPage />} />
               <Route path="tools/mv-idea" element={<MvIdeaPage />} />
+              <Route path="tools/prompt-dex" element={<PromptDexPage />} />
               <Route path="secretary" element={<SecretaryPage />} />
               <Route path="events" element={<EventsPage />} />
               <Route path="data" element={<DataPage />} />

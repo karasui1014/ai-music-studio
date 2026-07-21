@@ -1,4 +1,4 @@
-import { Clapperboard, NotebookPen, Wand2 } from 'lucide-react'
+import { Clapperboard, Library, NotebookPen, Wand2 } from 'lucide-react'
 
 import type { ToolId } from '@/lib/tools/types'
 
@@ -38,6 +38,15 @@ export const STUDIO_TOOLS: StudioToolDef[] = [
     description: '曲の情報から方向性の異なる3案を出し、ショットリストつきのMV企画書へ展開します。',
     icon: Clapperboard,
     route: '/tools/mv-idea',
+    available: true,
+    badge: 'ベータ',
+  },
+  {
+    id: 'prompt-dex',
+    name: 'プロンプト図鑑',
+    description: 'ジャンル・感情・用途から使えるプロンプトを探し、条件・成功のコツごと既存曲へ反映します。',
+    icon: Library,
+    route: '/tools/prompt-dex',
     available: true,
     badge: 'ベータ',
   },
