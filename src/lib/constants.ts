@@ -15,6 +15,7 @@ import {
   PartyPopper,
   Guitar,
   Wand2,
+  Layers,
 } from 'lucide-react'
 
 export const STATUS_ORDER: SongStatus[] = ['idea', 'lyrics', 'suno', 'mv', 'published']
@@ -72,7 +73,14 @@ export const HISTORY_ICON: Record<HistoryEventType, typeof Sparkles> = {
 }
 
 export interface ExternalTool {
-  key: 'storyboard' | 'subtitle' | 'guitarChordTab' | 'mastering' | 'stylePrompt' | 'review'
+  key:
+    | 'storyboard'
+    | 'subtitle'
+    | 'guitarChordTab'
+    | 'mastering'
+    | 'stylePrompt'
+    | 'review'
+    | 'seedanceBatchStudio'
   name: string
   description: string
   url: string
@@ -121,5 +129,12 @@ export const EXTERNAL_TOOLS: ExternalTool[] = [
     description: '完成した楽曲をAIにレビューしてもらう',
     url: 'https://karasui1014.github.io/gakkyoku-hihyou/',
     icon: MessageSquareText,
+  },
+  {
+    key: 'seedanceBatchStudio',
+    name: 'Seedance Batch Studio',
+    description: '動画素材をまとめてバッチ生成する',
+    url: 'https://seedance-batch-studio.karasui.chatgpt.site/',
+    icon: Layers,
   },
 ]
