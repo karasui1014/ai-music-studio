@@ -41,6 +41,18 @@ describe('初期収録データの健全性', () => {
     expect(uses).toContain('Shorts')
   })
 
+  it('ジャンル組み合わせ(フュージョン)が横断検索できる形で収録されている', () => {
+    const fusion = BUILTIN_PROMPTS.filter((e) => e.tags.includes('ジャンルMIX'))
+    expect(fusion.length).toBeGreaterThanOrEqual(12)
+    // 組み合わせは「A × B」がタイトルから分かる
+    expect(fusion.every((e) => e.title.includes('×'))).toBe(true)
+    // 人気の掛け合わせジャンルが押さえられている
+    const subgenres = new Set(fusion.map((e) => e.subgenre))
+    for (const s of ['フォンク', 'ハイパーポップ', 'シンセウェイブ', 'ジャズホップ', 'フューチャーファンク']) {
+      expect(subgenres, `サブジャンル ${s}`).toContain(s)
+    }
+  })
+
   it('Suno向け・Udio向けの両方が十分に収録されている', () => {
     const suno = BUILTIN_PROMPTS.filter((e) => e.services.includes('Suno'))
     const udio = BUILTIN_PROMPTS.filter((e) => e.services.includes('Udio'))
